@@ -1,0 +1,36 @@
+#  启动三个服务/三个容器
+services:
+  redis-server:
+    image: redis:latest
+    command: redis-server --requirepass 1234567
+    volumes:
+      # 持久化数据
+      - redis_data:/data 
+  ai-server:
+    # 根据当前目录下的Dockerfile创建镜像使用
+    build: ./
+    ports:
+      - "8000:8000"
+    environment:
+      # # 添加环境变量以访问redis
+      - REDIS_URL=redis://:1234567@redis-server:6379
+    command: python server.py
+    # 将video_data卷的数据映射到容器的/video目录下
+    volumes:
+      - voice_data:/voice
+  xu-dashi-server:
+    build: ./
+    command: python tele.py
+    environment:
+      # 添加环境变量以访问ai-server
+      - AI_SERVER_URL=http://ai-server:8000
+    #  # 将video_data卷的数据映射到容器的/video目录下
+    volumes:
+      - voice_data:/voice
+volumes:
+  redis_data:
+  # 添加了一个名为video_data的卷
+  voice_data:
+ 
+
+ 
