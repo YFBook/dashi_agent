@@ -31,7 +31,7 @@ from my_tools import my_tools
 import dashscope
 from dashscope.audio.tts import SpeechSynthesizer
 from langchain_openai import AzureChatOpenAI
-app = FastAPI()
+
 
 
 class DaShi:
@@ -67,10 +67,6 @@ class DaShi:
                 max_retries=25
         )
         return ty
-    
-    @classmethod
-    def get_llm(cls):
-        return DaShi.create_chat_tongyi()
 
     @classmethod
     def create_azure_chat_open_ai(cls) -> AzureChatOpenAI:
@@ -83,10 +79,17 @@ class DaShi:
                 timeout=60,
                 max_retries=2,
                 azure_endpoint=const.AZURE_END_POINT,
+                api_key=const.AZURE_OPENAI_API_KEY,
                 streaming=True
         )
         chatmodel.model_name = 'gpt-4o'
         return chatmodel
+
+    @classmethod
+    def get_llm(cls):
+        return DaShi.create_azure_chat_open_ai()
+
+
 
     def __init__(self) -> None:
         pass
@@ -308,8 +311,8 @@ class DaShi:
         result = self.agent_exec.invoke({'input':query,"chat_history": self.memory_history.messages})
         return result
     
+app = FastAPI()
 
-_dashi =DaShi()
 @app.get('/')
 def main():
     return 'hello'
@@ -339,6 +342,8 @@ def add_web_data(url:str):
     print('----------web数据成功添加到向量数据库----------------------')
 
 
-
-import uvicorn
-uvicorn.run(app=app,host='0.0.0.0', port=8000)
+if __name__ =='__main__':
+    _dashi =DaShi()
+    print('------')
+    import uvicorn
+    uvicorn.run(app=app,host='0.0.0.0', port=8000)
